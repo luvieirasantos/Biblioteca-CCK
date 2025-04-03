@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { Home } from "../pages/Home";
 import { Login } from "../pages/Login";
 import { Dashboard } from "../pages/Dashboard";
+import { NotFound } from "../pages/NotFound";
 import { useAuth } from "../context/AuthContext";
 
 export function AppRoutes() {
@@ -16,6 +17,7 @@ export function AppRoutes() {
           path="/dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

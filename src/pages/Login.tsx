@@ -18,28 +18,33 @@ export function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen px-4">
-      <h1 className="text-3xl font-bold mb-4 text-center text-blue-700">Login do Administrador</h1>
-      
-      <input
-        type="text"
-        placeholder="Usuário"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        className="p-2 border rounded mb-2 w-full max-w-xs"
-      />
-      
-      <input
-        type="password"
-        placeholder="Senha"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="p-2 border rounded mb-4 w-full max-w-xs"
-      />
-      
-      <button onClick={handleLogin} className="bg-blue-600 text-white px-4 py-2 rounded w-full max-w-xs">
-        Entrar
-      </button>
+    <div className="min-h-screen flex items-center justify-center bg-white px-6">
+      <div className="max-w-sm w-full space-y-6">
+        <h1 className="text-3xl font-bold text-center text-gray-800">Login Admin</h1>
+
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Usuário"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <input
+            type="password"
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <button
+            onClick={handleLogin}
+            className="w-full bg-black text-white py-3 rounded-lg hover:opacity-90 transition"
+          >
+            Entrar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
