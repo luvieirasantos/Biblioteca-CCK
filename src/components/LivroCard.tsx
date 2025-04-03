@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabaseClient";
 
@@ -23,6 +24,7 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
   const { currentUser } = useAuth();
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState({ ...livro });
+  const navigate = useNavigate();
 
   const handleSalvar = async () => {
     const { error } = await supabase
@@ -39,7 +41,10 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-4 border p-4 rounded shadow-sm bg-white">
+    <div
+      className="flex flex-col gap-4 border p-4 rounded shadow-sm bg-white cursor-pointer hover:shadow-md transition"
+      onClick={() => !editando && navigate(`/livro/${livro.id}`)}
+    >
       {!editando ? (
         <>
           <div className="w-full h-48 bg-gray-50 rounded border flex items-center justify-center">
@@ -84,9 +89,7 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
           <select
             className="border p-2 rounded"
             value={form.classificacao}
-            onChange={(e) =>
-              setForm({ ...form, classificacao: e.target.value as any })
-            }
+            onChange={(e) => setForm({ ...form, classificacao: e.target.value as any })}
           >
             <option value="adulto">Adulto</option>
             <option value="infantojuvenil">Infantojuvenil</option>
@@ -94,9 +97,7 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
           <select
             className="border p-2 rounded"
             value={form.status}
-            onChange={(e) =>
-              setForm({ ...form, status: e.target.value as any })
-            }
+            onChange={(e) => setForm({ ...form, status: e.target.value as any })}
           >
             <option value="disponível">Disponível</option>
             <option value="não encontrado">Não encontrado</option>
@@ -116,7 +117,10 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
                 Salvar
               </button>
               <button
-                onClick={() => setEditando(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditando(false);
+                }}
                 className="text-gray-500 hover:underline"
               >
                 Cancelar
@@ -125,14 +129,20 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
           ) : (
             <>
               <button
-                onClick={() => setEditando(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditando(true);
+                }}
                 className="text-blue-600 hover:underline"
               >
                 ✏️ Editar
               </button>
               {onDelete && (
                 <button
-                  onClick={() => onDelete(livro.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(livro.id);
+                  }}
                   className="text-red-500 hover:underline"
                 >
                   🗑️ Excluir
