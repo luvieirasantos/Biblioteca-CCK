@@ -1,51 +1,79 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LivroCard } from "../components/LivroCard";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../services/firebase";
+import { supabase } from "../services/supabaseClient";
 
 interface Livro {
   id: string;
   titulo: string;
   autor: string;
+  tema: string;
+  classificacao: "adulto" | "infantojuvenil";
+  status: "disponível" | "não encontrado" | "emprestado";
   imagem: string;
   criadoPor: string;
 }
 
+const LIVROS_POR_PAGINA = 9;
+
 export function Home() {
   const [livros, setLivros] = useState<Livro[]>([]);
   const [busca, setBusca] = useState("");
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [carregando, setCarregando] = useState(false);
+  const [totalPaginas, setTotalPaginas] = useState(1);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function fetchLivros() {
-      const snapshot = await getDocs(collection(db, "livros"));
-      const livrosDB = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      })) as Livro[];
-      setLivros(livrosDB);
+  const fetchTotalLivros = async (termo: string) => {
+    const { count } = await supabase
+      .from("livros")
+      .select("*", { count: "exact", head: true })
+      .or(`titulo.ilike.%${termo}%,autor.ilike.%${termo}%`);
+    return count ?? 0;
+  };
+
+  const fetchLivros = async (pagina: number, termo: string) => {
+    setCarregando(true);
+
+    const inicio = (pagina - 1) * LIVROS_POR_PAGINA;
+    const fim = inicio + LIVROS_POR_PAGINA - 1;
+
+    const { data, error } = await supabase
+      .from("livros")
+      .select("*")
+      .or(`titulo.ilike.%${termo}%,autor.ilike.%${termo}%`)
+      .range(inicio, fim);
+
+    if (!error && data) {
+      setLivros(data as Livro[]);
     }
 
-    fetchLivros();
-  }, []);
+    const total = await fetchTotalLivros(termo);
+    setTotalPaginas(Math.ceil(total / LIVROS_POR_PAGINA));
+    setCarregando(false);
+  };
 
-  const livrosFiltrados = livros.filter((livro) =>
-    livro.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-    livro.autor.toLowerCase().includes(busca.toLowerCase())
-  );
+  useEffect(() => {
+    fetchLivros(paginaAtual, busca);
+  }, [paginaAtual, busca]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
       <header className="flex justify-between items-center px-6 py-6 border-b border-gray-200">
-        <h1 className="text-3xl font-bold tracking-tight">📚 Centro Cultural Kalunguinha</h1>
-        <button
-          onClick={() => navigate("/login")}
-          className="bg-black text-white px-5 py-2 rounded-xl text-sm hover:opacity-80 transition"
-        >
-          Login do Administrador
-        </button>
-      </header>
+  <button
+    onClick={() => navigate("/")}
+    className="text-3xl font-bold tracking-tight hover:opacity-80 transition"
+  >
+    📚 Centro Cultural Kalunguinha
+  </button>
+  <button
+    onClick={() => navigate("/login")}
+    className="bg-black text-white px-5 py-2 rounded-xl text-sm hover:opacity-80 transition"
+  >
+    Login do Administrador
+  </button>
+</header>
+
 
       <main className="max-w-6xl mx-auto px-6 py-10">
         <div className="mb-6">
@@ -53,19 +81,46 @@ export function Home() {
             type="text"
             placeholder="Buscar por título ou autor..."
             value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            onChange={(e) => {
+              setPaginaAtual(1); // resetar pra página 1 ao buscar
+              setBusca(e.target.value);
+            }}
             className="w-full max-w-md p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
           />
         </div>
 
-        {livrosFiltrados.length === 0 ? (
-          <p className="text-gray-500 text-lg text-center mt-10">Nenhum livro encontrado.</p>
+        {carregando ? (
+          <p className="text-center text-gray-600">Carregando livros...</p>
+        ) : livros.length === 0 ? (
+          <p className="text-center text-gray-500">Nenhum livro encontrado.</p>
         ) : (
-          <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
-            {livrosFiltrados.map((livro) => (
-              <LivroCard key={livro.id} livro={livro} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
+              {livros.map((livro) => (
+                <LivroCard key={livro.id} livro={livro} />
+              ))}
+            </div>
+
+            <div className="flex justify-center mt-10 gap-4">
+              <button
+                onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                disabled={paginaAtual === 1}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >
+                ⬅ Página anterior
+              </button>
+              <span className="text-sm text-gray-700 mt-2">
+                Página {paginaAtual} de {totalPaginas}
+              </span>
+              <button
+                onClick={() => setPaginaAtual(p => Math.min(totalPaginas, p + 1))}
+                disabled={paginaAtual === totalPaginas}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+              >
+                Próxima página ➡
+              </button>
+            </div>
+          </>
         )}
       </main>
     </div>

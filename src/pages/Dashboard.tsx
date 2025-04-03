@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { LivroCard } from "../components/LivroCard";
 import { LivroForm } from "../components/LivroForm";
-import { collection, addDoc, deleteDoc, getDocs, doc } from "firebase/firestore";
-import { db } from "../services/firebase";
+import { supabase } from "../services/supabaseClient";
 
 interface Livro {
   id: string;
   titulo: string;
   autor: string;
+  tema: string;
+  classificacao: "adulto" | "infantojuvenil";
+  status: "disponível" | "não encontrado" | "emprestado";
   imagem: string;
   criadoPor: string;
 }
@@ -19,25 +21,23 @@ type LivroInput = Omit<Livro, "id">;
 export function Dashboard() {
   const { logout, currentUser } = useAuth();
   const navigate = useNavigate();
-
   const [livros, setLivros] = useState<Livro[]>([]);
   const [novoLivro, setNovoLivro] = useState<LivroInput>({
     titulo: "",
     autor: "",
+    tema: "",
+    classificacao: "adulto",
+    status: "disponível",
     imagem: "",
     criadoPor: currentUser || "desconhecido",
   });
 
-  useEffect(() => {
-    async function fetchLivros() {
-      const snapshot = await getDocs(collection(db, "livros"));
-      const livrosDB = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-      })) as Livro[];
-      setLivros(livrosDB);
-    }
+  async function fetchLivros() {
+    const { data, error } = await supabase.from("livros").select("*");
+    if (!error && data) setLivros(data as Livro[]);
+  }
 
+  useEffect(() => {
     fetchLivros();
   }, []);
 
@@ -47,37 +47,22 @@ export function Dashboard() {
   };
 
   const adicionarLivro = async () => {
-    if (!novoLivro.titulo || !novoLivro.autor || !novoLivro.imagem) {
-      alert("Preencha todos os campos!");
-      return;
-    }
-
-    const livroParaSalvar = {
-      ...novoLivro,
-      criadoPor: currentUser || "desconhecido",
-    };
-
-    const docRef = await addDoc(collection(db, "livros"), livroParaSalvar);
-    setLivros([...livros, { ...livroParaSalvar, id: docRef.id }]);
-
-    setNovoLivro({
-      titulo: "",
-      autor: "",
-      imagem: "",
-      criadoPor: currentUser || "desconhecido",
-    });
+    const { data, error } = await supabase.from("livros").insert([
+      { ...novoLivro, criadoPor: currentUser || "desconhecido" },
+    ]);
+    if (!error) fetchLivros();
   };
 
   const excluirLivro = async (id: string) => {
-    await deleteDoc(doc(db, "livros", id));
-    setLivros(livros.filter((livro) => livro.id !== id));
+    await supabase.from("livros").delete().eq("id", id);
+    setLivros(livros.filter((l) => l.id !== id));
   };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <header className="flex justify-between items-center px-6 py-6 border-b border-gray-200">
-        <h2 className="text-2xl font-bold tracking-tight">📖 Painel de Administração</h2>
-        <button onClick={handleLogout} className="text-sm text-red-500 hover:underline">
+        <h2 className="text-2xl font-bold">📖 Painel de Administração</h2>
+        <button onClick={handleLogout} className="text-red-500 text-sm hover:underline">
           Sair
         </button>
       </header>
