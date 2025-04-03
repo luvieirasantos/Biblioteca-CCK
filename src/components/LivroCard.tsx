@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabaseClient";
+import { motion } from "framer-motion";
 
 interface Livro {
   id: string;
@@ -41,7 +42,10 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col gap-4 border p-4 rounded shadow-sm bg-white cursor-pointer hover:shadow-md transition"
       onClick={() => !editando && navigate(`/livro/${livro.id}`)}
     >
@@ -152,6 +156,6 @@ export function LivroCard({ livro, onDelete, onEdit }: Props) {
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
