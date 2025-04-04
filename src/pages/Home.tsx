@@ -59,33 +59,32 @@ export function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      <header className="flex justify-between items-center px-6 py-6 border-b border-gray-200">
-  <button
-    onClick={() => navigate("/")}
-    className="text-3xl font-bold tracking-tight hover:opacity-80 transition"
-  >
-    📚 Centro Cultural Kalunguinha
-  </button>
-  <button
-    onClick={() => navigate("/login")}
-    className="bg-black text-white px-5 py-2 rounded-xl text-sm hover:opacity-80 transition"
-  >
-    Login do Administrador
-  </button>
-</header>
+      <header className="flex justify-between items-center px-4 sm:px-6 py-6 border-b border-gray-200">
+        <h1
+          onClick={() => navigate("/")}
+          className="text-2xl sm:text-3xl font-bold tracking-tight cursor-pointer hover:opacity-80"
+        >
+          📚 Centro Cultural Kalunguinha
+        </h1>
+        <button
+          onClick={() => navigate("/login")}
+          className="bg-black text-white px-5 py-2 rounded-xl text-sm hover:opacity-80 transition"
+        >
+          Login do Administrador
+        </button>
+      </header>
 
-
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6">
           <input
             type="text"
             placeholder="Buscar por título ou autor..."
             value={busca}
             onChange={(e) => {
-              setPaginaAtual(1); // resetar pra página 1 ao buscar
+              setPaginaAtual(1);
               setBusca(e.target.value);
             }}
-            className="w-full max-w-md p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full max-w-md p-2 sm:p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
           />
         </div>
 
@@ -95,7 +94,7 @@ export function Home() {
           <p className="text-center text-gray-500">Nenhum livro encontrado.</p>
         ) : (
           <>
-            <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {livros.map((livro) => (
                 <LivroCard key={livro.id} livro={livro} />
               ))}
@@ -103,7 +102,7 @@ export function Home() {
 
             <div className="flex justify-center mt-10 gap-4">
               <button
-                onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                onClick={() => setPaginaAtual((p) => Math.max(1, p - 1))}
                 disabled={paginaAtual === 1}
                 className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
               >
@@ -113,7 +112,7 @@ export function Home() {
                 Página {paginaAtual} de {totalPaginas}
               </span>
               <button
-                onClick={() => setPaginaAtual(p => Math.min(totalPaginas, p + 1))}
+                onClick={() => setPaginaAtual((p) => Math.min(totalPaginas, p + 1))}
                 disabled={paginaAtual === totalPaginas}
                 className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
               >
