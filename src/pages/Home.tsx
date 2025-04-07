@@ -59,20 +59,6 @@ export function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      <header className="flex justify-between items-center px-4 sm:px-6 py-6 border-b border-gray-200">
-        <h1
-          onClick={() => navigate("/")}
-          className="text-2xl sm:text-3xl font-bold tracking-tight cursor-pointer hover:opacity-80"
-        >
-          📚 Centro Cultural Kalunguinha
-        </h1>
-        <button
-          onClick={() => navigate("/login")}
-          className="bg-black text-white px-5 py-2 rounded-xl text-sm hover:opacity-80 transition"
-        >
-          Login do Administrador
-        </button>
-      </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="mb-6">
